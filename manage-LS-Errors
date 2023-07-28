@@ -1,0 +1,55 @@
+%REM
+	Agent test raiserror
+	Created Jul 28, 2023 by Francesco Marzolo
+%END REM
+
+Option Declare
+
+Private Const LSI_THREAD_CALLPROC=10
+
+Sub Initialize
+	On Error GoTo sbreng
+	
+	Call func1()    'comment out this line to show arbitrary error managing
+
+	Error 8003, "Arbitrary error"
+	
+endop:
+	Exit Sub
+sbreng:
+	Dim errmsg$
+	errmsg$="Error: " & Err & ", call stack: " &  describeerror()
+	msgbox errmsg
+	Resume endop
+End Sub
+
+Sub func1()
+	On Error GoTo sbreng
+	Call func2()
+
+endop:
+	Exit Sub
+sbreng:
+	Dim errmsg$
+	errmsg$=describeerror()
+	Error Err,errmsg
+End Sub
+
+private Function describeError() As String
+	describeError=Error & " (at row " & Erl & " of " & GetThreadInfo(LSI_THREAD_CALLPROC) & ")"
+End Function
+
+Sub func2()
+	On Error GoTo sbreng
+	' cause a divide by zero error
+
+	Dim res As Double
+	res=5/res
+	
+endop:
+	Exit Sub
+sbreng:
+	Dim errmsg$
+	errmsg$=describeerror()
+	Error Err,errmsg
+End Sub
